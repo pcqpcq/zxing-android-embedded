@@ -1,0 +1,63 @@
+apply plugin: 'maven'
+apply plugin: 'com.android.library'
+
+/**
+ * 上传Archives
+ * http://central.sonatype.org/pages/gradle.html
+ */
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: MVN_REPOSITORY_URL) {
+                authentication(userName: MVN_USER_NAME, password: MVN_PASSWORD)
+            }
+            pom.project {
+                groupId POM_GROUP_ID
+                artifactId POM_ARTIFACT_ID
+                version POM_VERSION
+            }
+        }
+    }
+}
+
+/**
+* 生成classes的jar包
+*/
+task androidJar(type: Jar) {
+    android.libraryVariants.all { variant ->
+        def name = variant.buildType.name
+        if ("debug".equalsIgnoreCase(name)) {
+            return; // Skip debug builds.
+        }
+        def jarTask = project.tasks.create(name: "jar${name.capitalize()}", type: Jar)
+        jarTask.dependsOn variant.javaCompile
+        jarTask.from variant.javaCompile.destinationDir
+        println "======  "+variant.javaCompile.destinationDir
+        artifacts.add('archives', jarTask);
+    }
+}
+
+/**
+* 生成Javadocs的jar包
+*/
+task androidJavadocsJar(type: Jar) {
+    classifier = 'javadoc'
+    from android.sourceSets.main.java.srcDirs
+}
+
+/**
+* 生成sources的Jar包
+*/
+task androidSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+/**
+* 所有需要打包的artifacts
+*/
+artifacts {
+    archives androidJar
+    archives androidSourcesJar
+    archives androidJavadocsJar
+}
