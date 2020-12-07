@@ -1,3 +1,6 @@
+# Base on origin tag 3.6.0
+---
+
 # ZXing Android Embedded
 
 Barcode scanning library for Android, using [ZXing][2] for decoding.
